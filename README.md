@@ -101,7 +101,7 @@ If the IP address isn't valid, DOOM will remind you of the correct format.
 | `scanner -arp`   | ARP scan the LAN (default range 24) |
 | `scanner -ptcp`  | TCP port scan a specific IP         |
 | `clear`          | Clear the terminal                  |
-| `exit`           | Quit DOOM                           |
+| `quit`           | Quit DOOM                           |
 
 ## Disclaimer
 
