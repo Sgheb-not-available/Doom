@@ -1,22 +1,5 @@
-import signal
 import requests
 import socket
-
-class Timeout():
-    class Timeout(Exception): pass
-    
-    def __init__(self, sec):
-        self.sec = sec
-        
-    def __enter__(self):
-        signal.signal(signal.SIGALRM, self.raise_timeout)
-        signal.alarm(self.sec)
-
-    def __exit__(self, *args):
-        signal.alarm(0) # disable alarm
-
-    def raise_timeout(self, *args):
-        raise Timeout.Timeout()
 
 def check_connection(self) -> bool:
     try:
@@ -25,15 +8,14 @@ def check_connection(self) -> bool:
             return True
     except:
         return False
-    
+
 def connect_tcp(self, host, port, timeout) -> tuple:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            
     try:
-        with Timeout(timeout):
-            connection = s.connect((host, int(port)))
-            return (host, port)
-    except (Timeout.Timeout, ConnectionRefusedError, OSError):
+        s.settimeout(timeout)
+        connection = s.connect((host, int(port)))
+        return (host, port)
+    except (ConnectionRefusedError, OSError):
         return None
     finally:
         s.close()
@@ -50,3 +32,16 @@ def get_host(self, domain) -> str:
         return host
     except socket.gaierror:
         return None
+    
+def split_threads(self, threads, next_threads):
+    for t in threads:
+        t.start()
+    
+    for t in threads:
+        t.join()
+        
+    for t in next_threads:
+        t.start()
+        
+    for t in next_threads:
+        t.join()

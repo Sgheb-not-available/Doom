@@ -38,7 +38,7 @@ scanner
     -ptcp             Perform a TCP port scan
 host                  Get host from domain name
 clear                 Clean your terminal
-exit                  Quit Doom
+quit                  Quit Doom
                 """)
             elif cmd == "scanner":
                 if check_connection(self):
@@ -109,9 +109,11 @@ exit                  Quit Doom
 ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
 ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
                 """)
-            elif cmd == "exit":
+            elif cmd == "quit":
                 print("Closing Doom...")
                 exit()
+            else:
+                print(f"Command '{cmd}' not found")
             
 if __name__ == "__main__":
     Main()

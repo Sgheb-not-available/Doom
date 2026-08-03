@@ -50,19 +50,19 @@ class Scanner:
                 print(f"Port {port} on the {host} network is not open or protected by a firewall")
         else:
             threads = []
+            next_threads = []
             for p in range(1, 1024):
                 t = threading.Thread(target=connect_tcp_thread, args=(self, host, open_ports, p))
-                threads.append(t)
+                if p <= 512:
+                    threads.append(t)
+                else:
+                    next_threads.append(t)
                 
-            for t in threads:
-                t.start()
-                
-            for t in threads:
-                t.join()
+            split_threads(self, threads, next_threads) # split to avoid OSError
                 
             if len(open_ports) > 0:
                 choice = input(f"{len(open_ports)} open ports found, do you want to list them? [y/n] ")
                 if choice == "y":
                     print(open_ports)
-                else:
-                    print(f"All well-known ports on the {host} network are closed or protected by a firewall")
+            else:
+                print(f"All well-known ports on the {host} network are closed or protected by a firewall")
