@@ -1,6 +1,10 @@
 import requests
 import socket
 
+"""
+NETWORK
+"""
+
 def check_connection(self) -> bool:
     try:
         res = requests.get("http://www.google.com")
@@ -33,6 +37,46 @@ def get_host(self, domain) -> str:
     except socket.gaierror:
         return None
     
+def get_domain(self, ip) -> str:
+    try:
+        domain = socket.gethostbyaddr(ip)[0]
+        return domain
+    except socket.herror:
+        return None
+    
+"""
+OSINT
+"""
+    
+def check_instagram(self, name, timeout=5) -> bool:
+    HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "X-IG-App-ID": "936619743392459",
+        "Accept": "application/json",
+    }
+
+    api_url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={name}"
+
+    try:
+        r = requests.get(api_url, headers=HEADERS, timeout=timeout)
+        print(r)
+    except requests.RequestException:
+        return False 
+
+    if r.status_code != 200:
+        return False
+
+    try:
+        data = r.json()
+    except ValueError:
+        return False
+
+    return data.get("data", {}).get("user") is not None
+
+"""
+OTHER
+"""
+ 
 def split_threads(self, threads, next_threads):
     for t in threads:
         t.start()

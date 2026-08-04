@@ -3,6 +3,7 @@ import re
 
 from helper import *
 from scanner import Scanner
+from osint import Osint
 
 class Main:
     def __init__(self):
@@ -36,7 +37,10 @@ scanner
     -ps               Perform a ping sweep scan
     -arp              Perform an ARP scan on the LAN
     -ptcp             Perform a TCP port scan
+osint
+    -p                Find profiles by nickname
 host                  Get host from domain name
+domain                Get domain name from host
 clear                 Clean your terminal
 quit                  Quit Doom
                 """)
@@ -83,19 +87,52 @@ quit                  Quit Doom
                             print(f"Invalid argument '{args[0]}'. Type help to list available commands")
                 else:
                     print("Connect to the internet to use network-related features")
+            elif cmd == "osint":
+                if check_connection(self):
+                    if not args:
+                        print("Use: osint [search type] [name]")
+                    else:
+                        search_type = args[0]
+                        name = args[1]
+                        
+                        if search_type == "-p":
+                            Osint.profile_scan(self, name)
+                else:
+                    print("Connect to the internet to use network-related features")
             elif cmd == "host":
                 if check_connection(self):
                     if not args:
                         print("Use: host [domain]")
                     else:
                         domain = args[0]
-                        host = get_host(self, domain)
                         
                         d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
                         if bool(re.match(d_pattern, domain)):
-                            print(f"{domain} is hosted on {host}")
+                            host = get_host(self, domain)
+                            if host:
+                                print(f"{domain} is hosted on {host}")
+                            else:
+                                print(f"{domain} does not exist")
                         else:
                             print(f"{domain} is not a domain name")
+                else:
+                    print("Connect to the internet to use network-related features")
+            elif cmd == "domain":
+                if check_connection(self):
+                    if not args:
+                        print("Use: domain [ip]")
+                    else:
+                        address = args[0]
+                        
+                        pattern = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
+                        if bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}\.{pattern}$", address)):
+                            domain = get_domain(self, address)
+                            if domain:
+                                print(f"{address} is hosting {domain}")
+                            else:
+                                print(f"{address} does not exist or isn't hosting a domain")
+                        else:
+                            print("Address should be written like this: [0-255].[0-255].[0-255].[0-255]")
                 else:
                     print("Connect to the internet to use network-related features")
             elif cmd == "clear":
