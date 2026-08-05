@@ -1,108 +1,178 @@
 # DOOM
 
-A simple interactive command-line network scanning tool. DOOM gives you a small shell where you can run ping sweeps, ARP scans, and TCP port scans.
+DOOM is a modular command-line networking and OSINT toolkit written in Python. It provides a lightweight interactive shell for common reconnaissance tasks including host discovery, ARP enumeration, TCP port scanning, hostname resolution, reverse DNS lookups, and basic username reconnaissance across multiple social platforms.
+
+> This project is intended for educational purposes and for use on systems and networks you own or are explicitly authorized to assess.
+
+## Features
+
+- Interactive shell
+- Ping sweep of IPv4 subnets
+- ARP discovery scan on local networks
+- TCP port scanner
+- Domain → IP resolution
+- IP → Domain (reverse DNS) lookup
+- Username/profile discovery across several websites
+- Optional proxy support for OSINT requests
+- Input validation for IP addresses, domains and scan parameters
 
 ## Requirements
 
-- Python 3
-- An internet/network connection (required for the `scanner` commands)
+- Python 3.10+
+- Root/administrator privileges for ARP scanning (and recommended for some network operations)
 
-## Getting Started
+### Python packages
 
-Run the program from your terminal:
+Install the required dependencies:
 
+```bash
+pip install requests icmplib scapy
 ```
+
+Depending on your operating system you may also need Npcap (Windows) or libpcap (Linux/macOS) for Scapy.
+
+## Running
+
+```bash
 sudo python3 main.py
 ```
 
-You'll see the DOOM banner, followed by a prompt:
+After startup, type:
 
-```
-> 
+```text
+help
 ```
 
-Type `help` at any time to see the list of available commands.
+to display all available commands.
 
 ## Commands
 
-### `help`
-Lists all available commands and their usage.
-
-### `clear`
-Clears your terminal screen.
-
-### `exit`
-Quits DOOM.
-
-### `scanner`
-Runs a network scan. Requires an active network connection — if you're not connected, DOOM will tell you to connect first.
-
-Usage:
+### scanner
 
 ```
-scanner [scan type] [address / range] [port]
+scanner -ps <network>
 ```
 
-There are three scan types:
+Performs a ping sweep.
 
-#### `-ps` — Ping Sweep
-Checks which hosts on a given subnet are online by pinging each address in the range.
-
-**Format:** the first three octets of an IP address (no trailing dot or last octet), e.g. `192.168.1`
+Example:
 
 ```
-> scanner -ps 192.168.1
+scanner -ps 192.168.1
 ```
 
-If the address isn't formatted correctly (each octate must be a number from 0–255), you'll get an error message reminding you of the correct format.
-
-#### `-arp` — ARP Scan
-Scans your local network using ARP requests to discover connected devices. This is useful for quickly identifying devices on your LAN (IP address, MAC address, etc.).
-
-**Format:** a number representing the subnet size in CIDR notation, between `1` and `24`.
+---
 
 ```
-> scanner -arp 24
+scanner -arp [cidr]
 ```
 
-If you don't provide a range, DOOM defaults to `24` (equivalent to a typical `/24` home network).
+Performs an ARP scan of the local network.
+
+Examples:
 
 ```
-> scanner -arp
+scanner -arp
+scanner -arp 24
 ```
 
-#### `-ptcp` — TCP Port Scan
-Scans a target IP address for open TCP ports.
+If omitted, `/24` is used.
 
-**Format:** a full IPv4 address, e.g. `192.168.1.10`. You can optionally specify a port (or port range, depending on how `scanner.py` implements it) as a third argument.
+---
 
 ```
-> scanner -ptcp 192.168.1.10
-> scanner -ptcp 192.168.1.10 80
+scanner -ptcp <ip|domain> [port]
 ```
 
-If the IP address isn't valid, DOOM will remind you of the correct format.
+Scans TCP ports.
 
-## Notes on Usage
+Examples:
 
-- All `scanner` commands check for an active internet connection before running. If you're offline, you'll see: `Connect to the internet to use network-related features`.
-- Address validation is done with regular expressions, so scans won't run unless the address format matches what's expected — read the error message for the exact format required.
-- Running `scanner` with no arguments will remind you of the correct syntax:
-  ```
-  Use: scanner [scan type] [address / range]
-  ```
+```
+scanner -ptcp 192.168.1.20
+scanner -ptcp 192.168.1.20 80
+scanner -ptcp example.com
+```
 
-## Quick Reference
+When no port is specified, DOOM scans the well-known ports (1–1023).
 
-| Command          | Description                        |
-|------------------|-------------------------------------|
-| `help`           | Show available commands             |
-| `scanner -ps`    | Ping sweep a subnet                 |
-| `scanner -arp`   | ARP scan the LAN (default range 24) |
-| `scanner -ptcp`  | TCP port scan a specific IP         |
-| `clear`          | Clear the terminal                  |
-| `quit`           | Quit DOOM                           |
+### osint
+
+```
+osint -p <username> [-t|-f]
+```
+
+Searches for a username across several supported platforms.
+
+Supported platforms include:
+
+- Instagram
+- Facebook
+- GitHub
+- Reddit
+- TikTok
+- Pinterest
+
+Options:
+
+- `-t` use a proxy
+- `-f` disable proxy usage
+
+If no option is supplied, DOOM asks whether a proxy should be used.
+
+### host
+
+```
+host <domain>
+```
+
+Returns the IPv4 address associated with a domain.
+
+Example:
+
+```
+host example.com
+```
+
+### domain
+
+```
+domain <ip>
+```
+
+Performs a reverse DNS lookup.
+
+Example:
+
+```
+domain 8.8.8.8
+```
+
+### Other commands
+
+| Command | Description |
+|---------|-------------|
+| help | Show available commands |
+| clear | Clear the terminal |
+| quit | Exit DOOM |
+
+## Project structure
+
+```
+main.py        Interactive shell
+scanner.py     Network scanning functionality
+osint.py       Username reconnaissance
+helper.py      Shared networking utilities
+proxy.py       Proxy helper functions
+```
+
+## Notes
+
+- Network-related commands require an active internet/network connection.
+- TCP scans use multithreading for faster execution.
+- ARP scans operate on the default `192.168.0.0/<cidr>` subnet.
+- Invalid addresses and parameters are validated before scans begin.
 
 ## Disclaimer
 
-Only scan networks and devices you own or have explicit permission to test. Unauthorized network scanning may be illegal in your jurisdiction.
+Only scan infrastructure you own or have explicit permission to test. The author is not responsible for misuse of this software.

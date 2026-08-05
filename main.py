@@ -7,15 +7,7 @@ from osint import Osint
 
 class Main:
     def __init__(self):
-        print(r"""
-██████╗  ██████╗  ██████╗ ███╗   ███╗
-██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║
-██║  ██║██║   ██║██║   ██║██╔████╔██║
-██║  ██║██║   ██║██║   ██║██║╚██╔╝██║
-██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
-╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-        """)
-        
+        print_doom()
         self.shell()
     
     def shell(self):
@@ -45,7 +37,7 @@ clear                 Clean your terminal
 quit                  Quit Doom
                 """)
             elif cmd == "scanner":
-                if check_connection(self):
+                if check_connection():
                     if not args:
                         print("Use: scanner [scan type] [address / range]")
                     else:
@@ -77,7 +69,7 @@ quit                  Quit Doom
                                 if bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}\.{pattern}$", address)):
                                     Scanner.tcp_port_scan(self, address, port)
                                 elif bool(re.match(d_pattern, address)):
-                                    host = get_host(self, address)
+                                    host = get_host(address)
                                     Scanner.tcp_port_scan(self, host, port)
                                 else:
                                     print("Address should be written like this: [0-255].[0-255].[0-255].[0-255] or be a domain name")
@@ -88,19 +80,35 @@ quit                  Quit Doom
                 else:
                     print("Connect to the internet to use network-related features")
             elif cmd == "osint":
-                if check_connection(self):
+                if check_connection():
                     if not args:
-                        print("Use: osint [search type] [name]")
+                        print("Use: osint [search type] [name] [proxy]")
                     else:
                         search_type = args[0]
                         name = args[1]
+                        if len(args) == 3:
+                            proxy = args[2]
                         
                         if search_type == "-p":
-                            Osint.profile_scan(self, name)
+                            use_proxy = False
+                            if len(args) == 3:
+                                if proxy == "-t":
+                                    use_proxy = True
+                                elif proxy == "-f":
+                                    use_proxy = False
+                                else:
+                                    print(f"'{proxy}' is not a valid option, use either '-t' (true) or '-f' (false)")
+                            
+                            if not use_proxy:
+                                choice = input("Please note that scraping might be illegal on some social media platforms, do you want to use a proxy? [y/n] ")
+                                if choice == "y":
+                                    use_proxy = True
+                            
+                            Osint.profile_scan(self, name, use_proxy)
                 else:
                     print("Connect to the internet to use network-related features")
             elif cmd == "host":
-                if check_connection(self):
+                if check_connection():
                     if not args:
                         print("Use: host [domain]")
                     else:
@@ -108,7 +116,7 @@ quit                  Quit Doom
                         
                         d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
                         if bool(re.match(d_pattern, domain)):
-                            host = get_host(self, domain)
+                            host = get_host(domain)
                             if host:
                                 print(f"{domain} is hosted on {host}")
                             else:
@@ -118,7 +126,7 @@ quit                  Quit Doom
                 else:
                     print("Connect to the internet to use network-related features")
             elif cmd == "domain":
-                if check_connection(self):
+                if check_connection():
                     if not args:
                         print("Use: domain [ip]")
                     else:
@@ -126,7 +134,7 @@ quit                  Quit Doom
                         
                         pattern = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
                         if bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}\.{pattern}$", address)):
-                            domain = get_domain(self, address)
+                            domain = get_domain(address)
                             if domain:
                                 print(f"{address} is hosting {domain}")
                             else:
@@ -137,15 +145,7 @@ quit                  Quit Doom
                     print("Connect to the internet to use network-related features")
             elif cmd == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
-                
-                print(r"""
-██████╗  ██████╗  ██████╗ ███╗   ███╗
-██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║
-██║  ██║██║   ██║██║   ██║██╔████╔██║
-██║  ██║██║   ██║██║   ██║██║╚██╔╝██║
-██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
-╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-                """)
+                print_doom()
             elif cmd == "quit":
                 print("Closing Doom...")
                 exit()

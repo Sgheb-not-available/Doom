@@ -43,7 +43,7 @@ class Scanner:
         
         if port:
             print(f"Attempting connection to {host}:{port}")
-            connection = connect_tcp(self, host, port, 10)
+            connection = connect_tcp(host, port, 10)
             if connection:
                 print(f"Connection to port {port} succeeded, port is open")
             else:
@@ -52,17 +52,17 @@ class Scanner:
             threads = []
             next_threads = []
             for p in range(1, 1024):
-                t = threading.Thread(target=connect_tcp_thread, args=(self, host, open_ports, p))
+                t = threading.Thread(target=connect_tcp_thread, args=(host, open_ports, p))
                 if p <= 512:
                     threads.append(t)
                 else:
                     next_threads.append(t)
                 
-            split_threads(self, threads, next_threads) # split to avoid OSError
+            split_threads(threads, next_threads) # split to avoid OSError
                 
             if len(open_ports) > 0:
                 choice = input(f"{len(open_ports)} open ports found, do you want to list them? [y/n] ")
                 if choice == "y":
                     print(open_ports)
             else:
-                print(f"All well-known ports on the {host} network are closed or protected by a firewall")
+                print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")
