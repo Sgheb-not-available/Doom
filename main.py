@@ -11,6 +11,12 @@ class Main:
         self.shell()
     
     def shell(self):
+        proxy = None
+        
+        d_octate = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
+        d_ipv4 = rf"^{d_octate}./{d_octate}./{d_octate}./{d_octate}"
+        d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
+        
         print("\nType 'help' to list available commands")
         
         while True:
@@ -23,19 +29,7 @@ class Main:
             args = command[1:]
 
             if cmd == "help":
-                print("""
-Available commands:
-scanner
-    -ps               Perform a ping sweep scan
-    -arp              Perform an ARP scan on the LAN
-    -ptcp             Perform a TCP port scan
-osint
-    -p                Find profiles by nickname
-host                  Get host from domain name
-domain                Get domain name from host
-clear                 Clean your terminal
-quit                  Quit Doom
-                """)
+                print_cmds()
             elif cmd == "scanner":
                 if check_connection():
                     if not args:
@@ -46,9 +40,7 @@ quit                  Quit Doom
                         port = args[2] if len(args) > 2 else None
 
                         if scan_type == "-ps":
-                            pattern = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
-                            
-                            if address and bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}$", address)):
+                            if address and bool(re.match(rf"^{d_octate}\.{d_octate}\.{d_octate}$", address)):
                                 Scanner.pingsweep(self, address)
                             else:
                                 print("Address should be written like this: [0-255].[0-255].[0-255]")
@@ -61,12 +53,9 @@ quit                  Quit Doom
                                     print("Range should be between 1 and 24") # ?
                             else:
                                 Scanner.arp_scan(self, "24")
-                        elif scan_type == "-ptcp":
-                            pattern = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
-                            d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
-                            
+                        elif scan_type == "-ptcp": # check if domain exists              
                             if address:
-                                if bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}\.{pattern}$", address)):
+                                if bool(re.match(d_ipv4, address)):
                                     Scanner.tcp_port_scan(self, address, port)
                                 elif bool(re.match(d_pattern, address)):
                                     host = get_host(address)
@@ -77,36 +66,50 @@ quit                  Quit Doom
                                 print("You must provide an address in order for the tcp port scan to happen")
                         else:
                             print(f"Invalid argument '{args[0]}'. Type help to list available commands")
-                else:
-                    print("Connect to the internet to use network-related features")
             elif cmd == "osint":
                 if check_connection():
                     if not args:
-                        print("Use: osint [search type] [name] [proxy]")
+                        print("Use: osint [search type] [name]")
                     else:
                         search_type = args[0]
                         name = args[1]
-                        if len(args) == 3:
-                            proxy = args[2]
                         
                         if search_type == "-p":
-                            use_proxy = False
-                            if len(args) == 3:
-                                if proxy == "-t":
-                                    use_proxy = True
-                                elif proxy == "-f":
-                                    use_proxy = False
-                                else:
-                                    print(f"'{proxy}' is not a valid option, use either '-t' (true) or '-f' (false)")
-                            
-                            if not use_proxy:
+                            if not proxy:
                                 choice = input("Please note that scraping might be illegal on some social media platforms, do you want to use a proxy? [y/n] ")
                                 if choice == "y":
-                                    use_proxy = True
+                                    proxy = get_proxy(proxy)
                             
-                            Osint.profile_scan(self, name, use_proxy)
-                else:
-                    print("Connect to the internet to use network-related features")
+                            Osint.profile_scan(self, name, proxy)
+            elif cmd == "proxy":
+                if check_connection():
+                    if not args:
+                        print("Use: proxy [action]")
+                    else:
+                        action = args[0]
+                        if action == "-a":
+                            if proxy:
+                                print("proxy is already active")
+                            else:
+                                proxy = get_proxy(proxy)
+                        elif action == "-d":
+                            if proxy:
+                                proxy = None
+                                print("Deactivated proxy")
+                            else:
+                                print("proxy is already deactivated")
+                        elif action == "-c":
+                            if proxy:
+                                proxy = get_proxy(proxy)
+                            else:
+                                print("No active proxy to change")
+                        elif action == "-s":
+                            if proxy:
+                                print(f"Proxy is active, current proxy: {proxy["http"]}")
+                            else:
+                                print("No active proxy")
+                        else:
+                            print(f"'{action}' is not a valid action, type 'help' to list available commands")
             elif cmd == "host":
                 if check_connection():
                     if not args:
@@ -114,7 +117,6 @@ quit                  Quit Doom
                     else:
                         domain = args[0]
                         
-                        d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
                         if bool(re.match(d_pattern, domain)):
                             host = get_host(domain)
                             if host:
@@ -123,17 +125,14 @@ quit                  Quit Doom
                                 print(f"{domain} does not exist")
                         else:
                             print(f"{domain} is not a domain name")
-                else:
-                    print("Connect to the internet to use network-related features")
             elif cmd == "domain":
                 if check_connection():
                     if not args:
                         print("Use: domain [ip]")
                     else:
                         address = args[0]
-                        
-                        pattern = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
-                        if bool(re.match(rf"^{pattern}\.{pattern}\.{pattern}\.{pattern}$", address)):
+
+                        if bool(re.match(d_ipv4, address)):
                             domain = get_domain(address)
                             if domain:
                                 print(f"{address} is hosting {domain}")
@@ -141,8 +140,6 @@ quit                  Quit Doom
                                 print(f"{address} does not exist or isn't hosting a domain")
                         else:
                             print("Address should be written like this: [0-255].[0-255].[0-255].[0-255]")
-                else:
-                    print("Connect to the internet to use network-related features")
             elif cmd == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
                 print_doom()

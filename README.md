@@ -99,7 +99,7 @@ When no port is specified, DOOM scans the well-known ports (1–1023).
 ### osint
 
 ```
-osint -p <username> [-t|-f]
+osint -p <username>
 ```
 
 Searches for a username across several supported platforms.
@@ -113,12 +113,30 @@ Supported platforms include:
 - TikTok
 - Pinterest
 
-Options:
+If no proxy is currently active, DOOM asks whether one should be used for the request (`y`/`n`). Use `proxy -a` beforehand to skip this prompt.
 
-- `-t` use a proxy
-- `-f` disable proxy usage
+### proxy
 
-If no option is supplied, DOOM asks whether a proxy should be used.
+```
+proxy <action>
+```
+
+Manages the proxy used for OSINT requests.
+
+| Action | Description |
+|--------|-------------|
+| `-a` | Activate a proxy (picks a working one from the proxy list) |
+| `-d` | Deactivate the current proxy |
+| `-c` | Change to a different proxy |
+| `-s` | Show current proxy status |
+
+Example:
+
+```
+proxy -a
+proxy -s
+proxy -d
+```
 
 ### host
 
@@ -160,10 +178,10 @@ domain 8.8.8.8
 
 ```
 main.py        Interactive shell
-scanner.py     Network scanning functionality
-osint.py       Username reconnaissance
-helper.py      Shared networking utilities
-proxy.py       Proxy helper functions
+scanner.py     Network scanning functionality (ping sweep, ARP scan, TCP port scan)
+osint.py       Username reconnaissance across social platforms
+helper.py      Shared networking utilities, banner/help text
+proxy.py       Proxy selection and rotation helper
 ```
 
 ## Notes

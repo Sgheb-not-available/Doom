@@ -1,7 +1,5 @@
 import requests
 import socket
-import time
-import random
 
 from proxy import *
 
@@ -15,6 +13,7 @@ def check_connection() -> bool:
         if res.status_code == 200:
             return True
     except:
+        print("Connect to the internet to use network-related features")
         return False
 
 def connect_tcp(host, port, timeout) -> tuple:
@@ -61,6 +60,26 @@ def print_doom():
 ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
 ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
      """)
+    
+def print_cmds():
+    print("""
+Available commands:
+scanner
+    -ps               Perform a ping sweep scan
+    -arp              Perform an ARP scan on the LAN
+    -ptcp             Perform a TCP port scan
+osint
+    -p                Find profiles by nickname
+proxy
+    -a                Activate the proxy
+    -d                Deactivate the proxy
+    -c                Change proxy
+    -s                Check proxy status
+host                  Get host from domain name
+domain                Get domain name from host
+clear                 Clean your terminal
+quit                  Quit Doom
+    """)
 
 def split_threads(threads, next_threads):
     for t in threads:

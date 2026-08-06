@@ -1,7 +1,7 @@
 import requests
 import random
 
-def get_proxy() -> dict:
+def get_proxy(current) -> dict:
     proxy_list = [
         "32.223.6.94:80",
         "172.171.83.26:8080",
@@ -14,6 +14,11 @@ def get_proxy() -> dict:
         "189.202.188.149:80",
         "24.63.14.91:8080",
     ]
+    
+    if current:
+        for i in range(len(proxy_list)):
+            if current == proxy_list[i]:
+                proxy_list.pop(i)
     
     while len(proxy_list) > 0:
         i = random.randint(0, len(proxy_list) - 2)
