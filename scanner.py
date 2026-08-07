@@ -1,3 +1,4 @@
+import ipaddress
 import threading
 from helper import *
 from icmplib import multiping
@@ -24,6 +25,9 @@ class Scanner:
             print(f"No alive hosts found for {address}")
             
     def arp_scan(self, ip_range):
+        local_ip = get_local_ip()
+        network = ipaddress.ip_network(f"{local_ip}/{ip_range}", strict=False)
+        
         arp = ARP(pdst="192.168.0.0/" + ip_range)
         ether = Ether(dst="ff:ff:ff:ff:ff:ff")
         packet = ether / arp

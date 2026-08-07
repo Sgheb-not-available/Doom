@@ -15,6 +15,16 @@ def check_connection() -> bool:
     except:
         print("Connect to the internet to use network-related features")
         return False
+    
+def get_local_ip() -> str:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except OSError:
+        return None
+    finally:
+        s.close()
 
 def connect_tcp(host, port, timeout) -> tuple:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -75,8 +85,8 @@ proxy
     -d                Deactivate the proxy
     -c                Change proxy
     -s                Check proxy status
-host                  Get host from domain name
-domain                Get domain name from host
+host                  Perform a DNS lookup
+domain                perform a reverse DNS lookup
 clear                 Clean your terminal
 quit                  Quit Doom
     """)

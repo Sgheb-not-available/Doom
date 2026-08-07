@@ -67,16 +67,20 @@ scanner -ps 192.168.1
 scanner -arp [cidr]
 ```
 
-Performs an ARP scan of the local network.
+Performs an ARP scan of the local network. DOOM auto-detects the host's active
+local IPv4 address and combines it with the given CIDR prefix to determine the
+subnet to scan, so the scan always targets the network the machine is actually
+connected to (`192.168.1.0/24`, `10.0.0.0/24`, etc.), not a fixed address range.
 
 Examples:
 
 ```
 scanner -arp
 scanner -arp 24
+scanner -arp 16
 ```
 
-If omitted, `/24` is used.
+`cidr` must be between 1 and 24. If omitted, `/24` is used.
 
 ---
 
@@ -188,7 +192,7 @@ proxy.py       Proxy selection and rotation helper
 
 - Network-related commands require an active internet/network connection.
 - TCP scans use multithreading for faster execution.
-- ARP scans operate on the default `192.168.0.0/<cidr>` subnet.
+- ARP scans target the subnet derived from the host's active local IP address and the given `<cidr>` prefix (default `/24`), not a hardcoded address range.
 - Invalid addresses and parameters are validated before scans begin.
 
 ## Disclaimer
