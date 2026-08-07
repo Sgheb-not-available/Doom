@@ -41,6 +41,17 @@ def connect_tcp(host, port, timeout):
     finally:
         s.close()
         
+def connect_udp(host, port, attempts=5):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        for a in range(attempts):
+            code = s.connect_ex((host, int(port)))
+            if code == 0:
+                banner = s.recv(1024).decode()
+                return code, banner
+    except Exception:
+        return 1
+        
 def connect_tcp_thread(host, open_ports, port):
     try:
         connection, banner = connect_tcp(host, port, 10)
@@ -48,6 +59,16 @@ def connect_tcp_thread(host, open_ports, port):
         connection = None
                         
     if connection:
+        open_ports[port] = banner
+        
+def connect_udp_thread(host, open_ports, port):
+    try:
+        code, banner = connect_udp(host, port)
+    except TypeError:
+        code = 1
+        banner = None
+        
+    if code == 0:
         open_ports[port] = banner
         
 def get_host(domain) -> str:
@@ -85,6 +106,7 @@ scanner
     -ps               Perform a ping sweep scan
     -arp              Perform an ARP scan on the LAN
     -ptcp             Perform a TCP port scan
+    -pudp             Perform a UDP port scan
 osint
     -p                Find profiles by nickname
 proxy

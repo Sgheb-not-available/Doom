@@ -77,3 +77,38 @@ class Scanner:
                             print(f"Found open port {p[0]}")
             else:
                 print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")
+                
+    def udp_port_scan(self, host, port):
+        open_ports = {}
+        start = time.time()
+        
+        if port:
+            print(f"Attempting connection to {host}:{port}")
+            connection = connect_udp(host, port)
+            if connection:
+                print(f"Connection to port {port} succeeded, port is open")
+            else:
+                print(f"Port {port} on the {host} network might be closed, try a tcp scan if you think this was caused by packet loss")
+        else:
+            threads = []
+            next_threads = []
+            for p in range(1, 1024):
+                t = threading.Thread(target=connect_udp_thread, args=(host, open_ports, p))
+                if p <= 512:
+                    threads.append(t)
+                else:
+                    next_threads.append(t)
+                
+            split_threads(threads, next_threads) # split to avoid OSError
+            end = time.time()
+                
+            if len(open_ports) > 0:
+                choice = input(f"{len(open_ports)} open ports found in {format(end - start)} seconds, do you want to list them? [y/n] ")
+                if choice == "y":
+                    for p in open_ports.items():
+                        if p[1]:
+                            print(f"Found open port {p[0]}: {p[1]}")
+                        else:
+                            print(f"Found open port {p[0]}")
+            else:
+                print(f"Couldn't connect to any well-known port on the {host} subnet, try a tcp scan if you think this was caused by packet loss")
