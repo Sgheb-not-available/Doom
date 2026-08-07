@@ -1,5 +1,6 @@
 import ipaddress
 import threading
+import time
 from helper import *
 from icmplib import multiping
 from scapy.all import ARP, Ether, srp
@@ -43,7 +44,8 @@ class Scanner:
             print(f"Sent {len(answered) + len(unaswered)} ARP packets and found no available hosts")
             
     def tcp_port_scan(self, host, port):
-        open_ports = []
+        open_ports = {}
+        start = time.time()
         
         if port:
             print(f"Attempting connection to {host}:{port}")
@@ -63,10 +65,15 @@ class Scanner:
                     next_threads.append(t)
                 
             split_threads(threads, next_threads) # split to avoid OSError
+            end = time.time()
                 
             if len(open_ports) > 0:
-                choice = input(f"{len(open_ports)} open ports found, do you want to list them? [y/n] ")
+                choice = input(f"{len(open_ports)} open ports found in {format(end - start)} seconds, do you want to list them? [y/n] ")
                 if choice == "y":
-                    print(open_ports)
+                    for p in open_ports.items():
+                        if p[1]:
+                            print(f"Found open port {p[0]}: {p[1]}")
+                        else:
+                            print(f"Found open port {p[0]}")
             else:
                 print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")

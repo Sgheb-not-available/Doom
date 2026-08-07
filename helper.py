@@ -26,22 +26,29 @@ def get_local_ip() -> str:
     finally:
         s.close()
 
-def connect_tcp(host, port, timeout) -> tuple:
+def connect_tcp(host, port, timeout):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.settimeout(timeout)
         connection = s.connect((host, int(port)))
-        return (host, port)
+        try:
+            banner = s.recv(1024).decode()
+            return (host, port), banner
+        except:
+            return (host, port)
     except (ConnectionRefusedError, OSError):
         return None
     finally:
         s.close()
         
 def connect_tcp_thread(host, open_ports, port):
-    connection = connect_tcp(host, port, 10)
+    try:
+        connection, banner = connect_tcp(host, port, 10)
+    except TypeError:
+        connection = None
                         
     if connection:
-        open_ports.append(port)
+        open_ports[port] = banner
         
 def get_host(domain) -> str:
     try:

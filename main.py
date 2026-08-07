@@ -53,13 +53,16 @@ class Main:
                                     print("Range should be between 1 and 24") # ?
                             else:
                                 Scanner.arp_scan(self, "24")
-                        elif scan_type == "-ptcp": # check if domain exists              
+                        elif scan_type == "-ptcp":             
                             if address:
                                 if bool(re.match(d_ipv4, address)):
                                     Scanner.tcp_port_scan(self, address, port)
                                 elif bool(re.match(d_pattern, address)):
                                     host = get_host(address)
-                                    Scanner.tcp_port_scan(self, host, port)
+                                    if host:
+                                        Scanner.tcp_port_scan(self, host, port)
+                                    else:
+                                        print(f"{address} is not a registered domain")
                                 else:
                                     print("Address should be written like this: [0-255].[0-255].[0-255].[0-255] or be a domain name")
                             else:
