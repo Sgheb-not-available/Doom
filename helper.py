@@ -26,7 +26,7 @@ def get_local_ip() -> str:
     finally:
         s.close()
 
-def connect_tcp(host, port, timeout):
+def connect_tcp(host, port, timeout=10):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.settimeout(timeout)
@@ -41,34 +41,35 @@ def connect_tcp(host, port, timeout):
     finally:
         s.close()
         
-def connect_udp(host, port, attempts=5):
+def probe_udp(host, port, timeout=10):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(timeout)
     try:
-        for a in range(attempts):
-            code = s.connect_ex((host, int(port)))
-            if code == 0:
-                banner = s.recv(1024).decode()
-                return code, banner
-    except Exception:
-        return 1
+        s.sendto(b"", (host, int(port)))
+        banner = s.recvfrom(1024)
+        return port, banner
+    except (socket.timeout, ConnectionRefusedError):
+        return None
+    finally:
+        s.close()
         
 def connect_tcp_thread(host, open_ports, port):
     try:
-        connection, banner = connect_tcp(host, port, 10)
+        connection, banner = connect_tcp(host, port)
     except TypeError:
         connection = None
                         
     if connection:
         open_ports[port] = banner
         
-def connect_udp_thread(host, open_ports, port):
+def probe_udp_thread(host, open_ports, port):
     try:
-        code, banner = connect_udp(host, port)
+        port, banner = probe_udp(host, port)
     except TypeError:
-        code = 1
+        port = None
         banner = None
         
-    if code == 0:
+    if port:
         open_ports[port] = banner
         
 def get_host(domain) -> str:

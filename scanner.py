@@ -49,11 +49,11 @@ class Scanner:
         
         if port:
             print(f"Attempting connection to {host}:{port}")
-            connection = connect_tcp(host, port, 10)
+            connection = connect_tcp(host, port)
             if connection:
                 print(f"Connection to port {port} succeeded, port is open")
             else:
-                print(f"Port {port} on the {host} network is not open or protected by a firewall")
+                print(f"Port {port} on the {host} subnet is not open or protected by a firewall")
         else:
             threads = []
             next_threads = []
@@ -84,16 +84,16 @@ class Scanner:
         
         if port:
             print(f"Attempting connection to {host}:{port}")
-            connection = connect_udp(host, port)
+            connection = probe_udp(host, port)
             if connection:
                 print(f"Connection to port {port} succeeded, port is open")
             else:
-                print(f"Port {port} on the {host} network might be closed, try a tcp scan if you think this was caused by packet loss")
+                print(f"Port {port} on the {host} subnet might be closed, try a tcp scan if you think this was caused by packet loss")
         else:
             threads = []
             next_threads = []
             for p in range(1, 1024):
-                t = threading.Thread(target=connect_udp_thread, args=(host, open_ports, p))
+                t = threading.Thread(target=probe_udp_thread, args=(host, open_ports, p))
                 if p <= 512:
                     threads.append(t)
                 else:
