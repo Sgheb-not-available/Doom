@@ -31,19 +31,19 @@
 | Discovery | Ping sweep across an IPv4 /24, ARP scan on the local subnet |
 | Port scanning | Multithreaded TCP and UDP port scans, full range or a single port |
 | DNS | Domain → IP resolution, IP → domain reverse lookup |
-| OSINT | Username/profile lookup across Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest |
+| OSINT | Username/profile lookup across Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest; domain WHOIS lookups |
 | Networking | Optional proxy rotation for OSINT requests, connectivity check before any network command |
 | Shell | Simple input validation for IPs, domains, and CIDR ranges; `clear` and `quit` built in |
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.12+ (the code uses nested quotes inside f-strings, which needs 3.12's relaxed f-string grammar)
 - Root/administrator privileges (required for ARP scanning, recommended for port scanning)
 
 ### Python packages
 
 ```bash
-pip install requests icmplib scapy
+pip install requests icmplib scapy python-whois
 ```
 
 Scapy also needs a packet-capture backend: **Npcap** on Windows, or **libpcap** on Linux/macOS.
@@ -53,7 +53,7 @@ Scapy also needs a packet-capture backend: **Npcap** on Windows, or **libpcap** 
 ```bash
 git clone <repo-url>
 cd doom
-pip install requests icmplib scapy
+pip install requests icmplib scapy python-whois
 ```
 
 ## Usage
@@ -74,7 +74,8 @@ scanner
     -ptcp             Perform a TCP port scan
     -pudp             Perform a UDP port scan
 osint
-    -p                Find profiles by nickname
+    -p                Scrape socials for a profile
+    -w                Perform a whois lookup on a domain
 proxy
     -a                Activate the proxy
     -d                Deactivate the proxy
@@ -100,7 +101,7 @@ scanner -ps 192.168.1
 
 ### `scanner -arp [cidr]`
 
-ARP-scans the local subnet. DOOM detects the machine's active local IPv4 address and combines it with the given CIDR prefix to pick the subnet, so it always targets the network you're actually connected to rather than a hardcoded range. `cidr` must be between 1 and 24; it defaults to 24 if omitted.
+ARP-scans a subnet. `cidr` must be between 1 and 24; it defaults to 24 if omitted. Note: the scan currently targets `192.168.0.0/<cidr>` regardless of your actual local IP — useful if you're on that range, but if your LAN uses a different private range (e.g. `10.x.x.x` or `192.168.1.x`) this won't reach your local hosts.
 
 ```
 scanner -arp
@@ -133,6 +134,14 @@ Checks whether a given username/handle exists on Instagram, Facebook, GitHub, Re
 
 ```
 osint -p someusername
+```
+
+### `osint -w <domain>`
+
+Looks up WHOIS registration data for a domain. Prints the registered admin name (if available) and asks whether you want to see the full WHOIS record.
+
+```
+osint -w example.com
 ```
 
 ### `proxy <action>`
@@ -190,7 +199,7 @@ helper.py      Shared networking utilities, banner and help text
 
 - Network commands require an active internet connection, checked before each run.
 - TCP and UDP scans are multithreaded for speed.
-- ARP scans target the subnet derived from the host's active local IP and the given CIDR prefix (default `/24`), not a fixed address range.
+- ARP scans target `192.168.0.0/<cidr>` (default `/24`) — a fixed range, not one derived from your machine's actual local IP.
 - Addresses, domains, and scan parameters are validated before a scan starts.
 
 ## Disclaimer

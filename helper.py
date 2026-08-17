@@ -6,15 +6,6 @@ from proxy import *
 """
 NETWORK
 """
-
-def check_connection() -> bool:
-    try:
-        res = requests.get("http://www.google.com")
-        if res.status_code == 200:
-            return True
-    except:
-        print("Connect to the internet to use network-related features")
-        return False
     
 def get_local_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -109,7 +100,8 @@ scanner
     -ptcp             Perform a TCP port scan
     -pudp             Perform a UDP port scan
 osint
-    -p                Find profiles by nickname
+    -p                Scrape socials for a profile
+    -w                Perform a whois lookup on a domain
 proxy
     -a                Activate the proxy
     -d                Deactivate the proxy
@@ -120,6 +112,15 @@ domain                perform a reverse DNS lookup
 clear                 Clean your terminal
 quit                  Quit Doom
     """)
+    
+def check_connection() -> bool:
+    try:
+        res = requests.get("http://www.google.com")
+        if res.status_code == 200:
+            return True
+    except:
+        print("Connect to the internet to use network-related features")
+        return False
 
 def split_threads(threads, next_threads):
     for t in threads:

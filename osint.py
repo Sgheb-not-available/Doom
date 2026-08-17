@@ -1,4 +1,6 @@
 import time
+import whois
+import os
 
 from helper import *
 
@@ -48,3 +50,13 @@ class Osint:
             result[key] = exists
             
         print(f"\n{result}")
+        
+    def whois(self, domain):                
+        w = whois.whois(domain)
+        if w.admin_name is not None:
+            choice = input(f"The domain {domain} is owned by {w.admin_name}, do you wish to see more? [y/n] ")
+        else:
+            choice = input(f"No admin name found for domain {domain}, do you want to see more anyway? [y/n] ")
+        if choice == "y":
+            print(f"\n{w}")
+        

@@ -9,8 +9,8 @@ class Scanner:
     def pingsweep(self, address):
         addresses = []
         alive = []
-        for port in range(255):
-            addresses.append(f"{address}.{port}")
+        for subnet in range(255):
+            addresses.append(f"{address}.{subnet}")
             
         hosts = multiping(addresses, count=5)
         for host in hosts:

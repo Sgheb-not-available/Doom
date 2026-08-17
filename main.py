@@ -99,6 +99,12 @@ class Main:
                                         proxy = get_proxy(proxy)
                                 
                                 Osint.profile_scan(self, name, proxy)
+                            elif search_type == "-w":
+                                host = get_host(name)
+                                if bool(re.match(d_pattern, name)) and host:
+                                    Osint.whois(self, name)
+                                else:
+                                    print(f"{name} is not a valid domain")
                 elif cmd == "proxy":
                     if check_connection():
                         if not args:
