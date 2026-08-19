@@ -71,11 +71,11 @@ class Main:
                             elif scan_type == "-pudp":
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        Scanner.udp_port_scan(self, address, port)
+                                        Scanner.udp_port_scan(self, address, port, proxy)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            Scanner.udp_port_scan(self, host, port)
+                                            Scanner.udp_port_scan(self, host, port, proxy)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:

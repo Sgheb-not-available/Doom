@@ -91,7 +91,7 @@ class Scanner:
             else:
                 print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")
                 
-    def udp_port_scan(self, host, port):
+    def udp_port_scan(self, host, port, proxy):
         open_ports = {}
         start = time.time()
         
@@ -100,6 +100,10 @@ class Scanner:
             connection = probe_udp(host, port)
             if connection:
                 print(f"Connection to port {port} succeeded, port is open")
+                if port == "80":
+                    choice = input(f"\nPort 80 is open, do you want to grab the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
+                    if choice == "y":
+                        get_content(host, proxy)
             else:
                 print(f"Port {port} on the {host} subnet might be closed, try a tcp scan if you think this was caused by packet loss")
         else:
@@ -123,5 +127,11 @@ class Scanner:
                             print(f"Found open port {p[0]}: {p[1]}")
                         else:
                             print(f"Found open port {p[0]}")
+                            
+                    for i in open_ports.items():
+                        if i[0] == 80:
+                            choice = input(f"\nPort 80 is open, do you want to grab the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
+                            if choice == "y":
+                                get_content(host, proxy)
             else:
                 print(f"Couldn't connect to any well-known port on the {host} subnet, try a tcp scan if you think this was caused by packet loss")
