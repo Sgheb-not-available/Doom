@@ -26,7 +26,7 @@ class Osint:
             for attempt in range(max_retries):
                 if not exists:
                     try:
-                        r = requests.get(url, headers=HEADERS, timeout=timeout, allow_redirects=True, proxies=proxy)
+                        r = requests.get(url, headers=HEADERS, timeout=timeout, allow_redirects=True, proxies=proxy.proxy)
                     except requests.RequestException as e:
                         if attempt == max_retries:
                             print(f"{key}: Request failed: {e}")
@@ -51,7 +51,7 @@ class Osint:
             
         print(f"\n{result}")
         
-    def whois(self, domain):                
+    def whois(self, domain): # proxy?                
         w = whois.whois(domain)
         if w.admin_name is not None:
             choice = input(f"The domain {domain} is owned by {w.admin_name}, do you wish to see more? [y/n] ")

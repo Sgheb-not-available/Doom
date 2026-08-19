@@ -32,12 +32,13 @@
 | Port scanning | Multithreaded TCP and UDP port scans, full range or a single port |
 | DNS | Domain → IP resolution, IP → domain reverse lookup |
 | OSINT | Username/profile lookup across Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest; domain WHOIS lookups |
-| Networking | Optional proxy rotation for OSINT requests, connectivity check before any network command |
+| Networking | Optional proxy rotation for OSINT and page-fetch requests, connectivity check before any network command |
+| Web | Fetch the raw content of a web page by domain or IP, with an optional prompt to grab a page automatically when a scan finds port 80 open |
 | Shell | Simple input validation for IPs, domains, and CIDR ranges; `clear` and `quit` built in |
 
 ## Requirements
 
-- Python 3.12+ (the code uses nested quotes inside f-strings, which needs 3.12's relaxed f-string grammar)
+- Python 3.12+
 - Root/administrator privileges (required for ARP scanning, recommended for port scanning)
 
 ### Python packages
@@ -81,6 +82,7 @@ proxy
     -d                Deactivate the proxy
     -c                Change proxy
     -s                Check proxy status
+get                   Grab the content of a web page
 host                  Perform a DNS lookup
 domain                perform a reverse DNS lookup
 clear                 Clean your terminal
@@ -118,6 +120,8 @@ scanner -ptcp 192.168.1.20
 scanner -ptcp 192.168.1.20 80
 scanner -ptcp example.com
 ```
+
+If port 80 turns up open (whether you scanned it directly or it showed up in a full range scan), DOOM offers to grab the page's content on the spot — same as running `get` against that host.
 
 ### `scanner -pudp <ip|domain> [port]`
 
@@ -175,6 +179,15 @@ Reverse-resolves an IPv4 address to a hostname.
 
 ```
 domain 8.8.8.8
+```
+
+### `get <domain|ip>`
+
+Fetches and prints the raw content of a web page over HTTP. If you don't have a proxy active, DOOM asks whether you want to set one up first. An IP address is reverse-resolved to a domain before the request is made.
+
+```
+get example.com
+get 93.184.216.34
 ```
 
 ### Other commands

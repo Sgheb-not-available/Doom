@@ -11,7 +11,7 @@ class Main:
         self.shell()
     
     def shell(self):
-        proxy = None
+        proxy = Proxy()
         
         d_octate = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
         d_ipv4 = rf"^{d_octate}\.{d_octate}\.{d_octate}\.{d_octate}$"
@@ -57,11 +57,11 @@ class Main:
                             elif scan_type == "-ptcp":             
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        Scanner.tcp_port_scan(self, address, port)
+                                        Scanner.tcp_port_scan(self, address, port, proxy)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            Scanner.tcp_port_scan(self, host, port)
+                                            Scanner.tcp_port_scan(self, host, port, proxy)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:
@@ -93,10 +93,10 @@ class Main:
                             name = args[1]
                             
                             if search_type == "-p":
-                                if not proxy:
+                                if not proxy.proxy:
                                     choice = input("Please note that scraping might be illegal on some social media platforms, do you want to use a proxy? [y/n] ")
                                     if choice == "y":
-                                        proxy = get_proxy(proxy)
+                                        proxy.get_proxy()
                                 
                                 Osint.profile_scan(self, name, proxy)
                             elif search_type == "-w":
@@ -112,24 +112,24 @@ class Main:
                         else:
                             action = args[0]
                             if action == "-a":
-                                if proxy:
+                                if proxy.proxy:
                                     print("proxy is already active")
                                 else:
-                                    proxy = get_proxy(proxy)
+                                    proxy.get_proxy()
                             elif action == "-d":
-                                if proxy:
-                                    proxy = None
+                                if proxy.proxy:
+                                    proxy.proxy = None
                                     print("Deactivated proxy")
                                 else:
                                     print("proxy is already deactivated")
                             elif action == "-c":
-                                if proxy:
-                                    proxy = get_proxy(proxy)
+                                if proxy.proxy:
+                                    proxy.get_proxy()
                                 else:
                                     print("No active proxy to change")
                             elif action == "-s":
-                                if proxy:
-                                    print(f"Proxy is active, current proxy: {proxy["http"]}")
+                                if proxy.proxy:
+                                    print(f"Proxy is active, current proxy: {proxy.proxy["http"]}")
                                 else:
                                     print("No active proxy")
                             else:
@@ -164,6 +164,14 @@ class Main:
                                     print(f"{address} does not exist or isn't hosting a domain")
                             else:
                                 print("Address should be written like this: [0-255].[0-255].[0-255].[0-255]")
+                elif cmd == "get":
+                    if check_connection():
+                        if not args:
+                            print("Use: get [domain / ip]")
+                        else:
+                            address = args[0]
+                            
+                            get_content(address, proxy, d_ipv4)    
                 elif cmd == "clear":
                     os.system("cls" if os.name == "nt" else "clear")
                     print_doom()
