@@ -54,7 +54,7 @@ class Osint:
     def whois(self, domain): # proxy?                
         w = whois.whois(domain)
         if w.admin_name is not None:
-            choice = input(f"The domain {domain} is owned by {w.admin_name}, do you wish to see more? [y/n] ")
+            choice = input(f"The domain {domain} is owned by {w.admin_name}, do you want to see more? [y/n] ")
         else:
             choice = input(f"No admin name found for domain {domain}, do you want to see more anyway? [y/n] ")
         if choice == "y":

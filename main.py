@@ -13,8 +13,9 @@ class Main:
     def shell(self):
         proxy = Proxy()
         
-        d_octate = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
-        d_ipv4 = rf"^{d_octate}\.{d_octate}\.{d_octate}\.{d_octate}$"
+        d_octet = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
+        d_ipv4 = rf"^{d_octet}\.{d_octet}\.{d_octet}\.{d_octet}$"
+        d_ipv4_port = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0)$"
         d_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$"
         
         print("\nType 'help' to list available commands")
@@ -41,7 +42,7 @@ class Main:
                             port = args[2] if len(args) > 2 else None
 
                             if scan_type == "-ps":
-                                if address and bool(re.match(rf"^{d_octate}\.{d_octate}\.{d_octate}$", address)):
+                                if address and bool(re.match(rf"^{d_octet}\.{d_octet}\.{d_octet}$", address)):
                                     Scanner.pingsweep(self, address)
                                 else:
                                     print("Address should be written like this: [0-255].[0-255].[0-255]")
@@ -111,12 +112,33 @@ class Main:
                             print("Use: proxy [action]")
                         else:
                             action = args[0]
+                            proxy_ip = args[1] if len(args) > 1 else None
+                            
                             if action == "-a":
+                                if proxy_ip and bool(re.match(d_ipv4_port, proxy_ip)) and proxy_ip not in proxy.proxy_list_dinamic:
+                                    try:
+                                        proxies = {
+                                                    "http": f"http://{proxy_ip}",
+                                                    "https": f"http://{proxy_ip}"
+                                                }
+                                        resp = requests.get("https://api.ipify.org?format=json",
+                                                            proxies=proxies,
+                                                            timeout=15)
+                                            
+                                        print(f"Successfully added proxy: {proxy_ip}")
+                                        proxy.proxy_list_original.append(proxy_ip)
+                                        proxy.save_proxy_list()
+                                    except requests.exceptions.RequestException:
+                                        print(f"Unable to successfully connect to {proxy_ip}, try again later")
+                                        continue
+                                else:
+                                    print("To add a proxy provide a valid ip")
+                            elif action == "-t":
                                 if proxy.proxy:
                                     print("proxy is already active")
                                 else:
                                     proxy.get_proxy()
-                            elif action == "-d":
+                            elif action == "-f":
                                 if proxy.proxy:
                                     proxy.proxy = None
                                     print("Deactivated proxy")
@@ -132,6 +154,8 @@ class Main:
                                     print(f"Proxy is active, current proxy: {proxy.proxy["http"]}")
                                 else:
                                     print("No active proxy")
+                            elif action == "-ls":
+                                print(proxy.proxy_list_original)
                             else:
                                 print(f"'{action}' is not a valid action, type 'help' to list available commands")
                 elif cmd == "host":

@@ -56,7 +56,7 @@ class Scanner:
                 if port == "80":
                     choice = input(f"\nPort 80 is open, do you want to grab the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
                     if choice == "y":
-                        get_content(host, proxy)
+                        get_content(host, proxy, d_ipv4=None)
                 else:
                     print(f"Connection to port {port} succeeded, port is open")
             else:
@@ -87,7 +87,7 @@ class Scanner:
                         if i[0] == 80:
                             choice = input(f"\nPort 80 is open, do you want to grab the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
                             if choice == "y":
-                                get_content(host, proxy)
+                                get_content(host, proxy, d_ipv4=None)
             else:
                 print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")
                 
@@ -132,6 +132,6 @@ class Scanner:
                         if i[0] == 80:
                             choice = input(f"\nPort 80 is open, do you want to grab the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
                             if choice == "y":
-                                get_content(host, proxy)
+                                get_content(host, proxy, d_ipv4=None)
             else:
                 print(f"Couldn't connect to any well-known port on the {host} subnet, try a tcp scan if you think this was caused by packet loss")

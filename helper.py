@@ -79,17 +79,20 @@ def get_domain(ip) -> str:
         return None
     
 def get_content(address, proxy, d_ipv4):
-    if not proxy.proxy:
-        choice = input("\nYou have no active proxy, do you want to use one before grabbing the content of this web page? [y/n] ")
-        if choice == "y":
-            proxy.get_proxy()
-    if d_ipv4 and bool(re.match(d_ipv4, address)):
-        address = get_domain(address)
-    r = requests.get(f"http://{address}", proxies=proxy.proxy)
-    if r.status_code == 200:
-        print(f"\n{r.content.strip()}")
-    else:
-        print(f"There was an error while to get the content of {address}, code: {r.status_code}")
+    try:
+        if not proxy.proxy:
+            choice = input("\nYou have no active proxy, do you want to use one before grabbing the content of this web page? [y/n] ")
+            if choice == "y":
+                proxy.get_proxy()
+        if d_ipv4 and bool(re.match(d_ipv4, address)):
+            address = get_domain(address)
+        r = requests.get(f"http://{address}", proxies=proxy.proxy)
+        if r.status_code == 200:
+            print(f"\n{r.content.strip()}")
+        else:
+            print(f"There was an error while to get the content of {address}, code: {r.status_code}")
+    except requests.exceptions.SSLError:
+        print(f"An SSL error occourred while trying to fetch the content of {address}")
 
 """
 OTHER
@@ -117,10 +120,12 @@ osint
     -p                Scrape socials for a profile
     -w                Perform a whois lookup on a domain
 proxy
-    -a                Activate the proxy
-    -d                Deactivate the proxy
+    -a                Add a proxy to the list
+    -t                Activate the proxy
+    -f                Deactivate the proxy
     -c                Change proxy
     -s                Check proxy status
+    -ls               List available proxies
 get                   Fetch the content of a web page
 host                  Perform a DNS lookup
 domain                perform a reverse DNS lookup

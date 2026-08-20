@@ -1,14 +1,11 @@
 import requests
 import random
-
-# STUCK ON ONE PROXY (maybe chain implementation?)
+import json
 
 class Proxy:
     def __init__(self):
         self.proxy = None
-        
-    def get_proxy(self):
-        proxy_list = [
+        self.proxy_list_base = [
             "32.223.6.94:80",
             "172.171.83.26:8080",
             "174.138.119.88:80",
@@ -21,14 +18,18 @@ class Proxy:
             "24.63.14.91:8080",
         ]
         
-        if self.proxy:
-            for i in range(len(proxy_list)):
-                if self.proxy == proxy_list[i]:
-                    proxy_list.pop(i)
+        self.proxy_list_original = self.load_proxy_list()
+        self.proxy_list_dinamic = self.proxy_list_original
         
-        while len(proxy_list) > 0:
-            i = random.randint(0, len(proxy_list) - 2)
-            proxy = proxy_list[i]
+    def get_proxy(self):
+        if self.proxy:
+            for i in range(len(self.proxy_list_dinamic)):
+                if self.proxy == self.proxy_list_dinamic[i]:
+                    self.proxy_list_dinamic.pop(i)
+        
+        while len(self.proxy_list_dinamic) > 0:
+            i = random.randint(0, len(self.proxy_list_dinamic) - 2)
+            proxy = self.proxy_list_dinamic[i]
             proxies = {
                 "http": f"http://{proxy}",
                 "https": f"http://{proxy}"
@@ -37,14 +38,27 @@ class Proxy:
             try:
                 resp = requests.get("https://api.ipify.org?format=json",
                                     proxies=proxies,
-                                    timeout=5)
+                                    timeout=10)
                     
                 print(f"Found working proxy: {proxy}")
         
                 self.proxy = proxies
                 return
             except requests.exceptions.RequestException:
-                proxy_list.pop(i)
+                self.proxy_list_dinamic.pop(i)
                 continue
         
         raise Exception("All available proxies are down, try again in a bit")  
+    
+    def save_proxy_list(self):
+        with open("proxy.json", "w") as f:
+            json.dump({"proxy_list": self.proxy_list_original}, f)
+
+    def load_proxy_list(self) -> list:
+        try:
+            with open("proxy.json", "r") as f:
+                raw = json.load(f)
+                proxies = raw.get("proxy_list", [])
+                return proxies if proxies else self.proxy_list_base
+        except (FileNotFoundError, json.JSONDecodeError):
+            return self.proxy_list_base

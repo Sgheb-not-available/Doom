@@ -78,10 +78,12 @@ osint
     -p                Scrape socials for a profile
     -w                Perform a whois lookup on a domain
 proxy
-    -a                Activate the proxy
-    -d                Deactivate the proxy
+    -a                Add a proxy to the list
+    -t                Activate the proxy
+    -f                Deactivate the proxy
     -c                Change proxy
     -s                Check proxy status
+    -ls               List available proxies
 get                   Grab the content of a web page
 host                  Perform a DNS lookup
 domain                perform a reverse DNS lookup
@@ -150,14 +152,16 @@ osint -w example.com
 
 ### `proxy <action>`
 
-Controls the proxy used for OSINT requests.
+Controls the proxy used for requests.
 
 | Action | Description |
 |---|---|
-| `-a` | Activate a proxy (picks a working one from the built-in list) |
-| `-d` | Deactivate the current proxy |
+| `-a` | Add a proxy to the built-in list|
+| `-t` | Activate a proxy (picks a working one from the built-in list) |
+| `-f` | Deactivate the current proxy |
 | `-c` | Change to a different proxy |
 | `-s` | Show current proxy status |
+| `-ls`| Print all proxies in the built-in list |
 
 ```
 proxy -a
