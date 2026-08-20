@@ -12,6 +12,7 @@ class Main:
     
     def shell(self):
         proxy = Proxy()
+        scanner = Scanner()
         
         d_octet = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
         d_ipv4 = rf"^{d_octet}\.{d_octet}\.{d_octet}\.{d_octet}$"
@@ -43,26 +44,26 @@ class Main:
 
                             if scan_type == "-ps":
                                 if address and bool(re.match(rf"^{d_octet}\.{d_octet}\.{d_octet}$", address)):
-                                    Scanner.pingsweep(self, address)
+                                    scanner.pingsweep(address)
                                 else:
                                     print("Address should be written like this: [0-255].[0-255].[0-255]")
                             elif scan_type == "-arp":
                                 if address:
                                     pattern = r'^(1[0-9]|2[0-4]|[1-9])$'
                                     if bool(re.match(pattern, address)): 
-                                        Scanner.arp_scan(self, address)
+                                        scanner.arp_scan(address)
                                     else:
                                         print("Range should be between 1 and 24") # ?
                                 else:
-                                    Scanner.arp_scan(self, "24")
+                                    scanner.arp_scan("24")
                             elif scan_type == "-ptcp":             
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        Scanner.tcp_port_scan(self, address, port, proxy)
+                                        scanner.tcp_port_scan(address, port, proxy)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            Scanner.tcp_port_scan(self, host, port, proxy)
+                                            scanner.tcp_port_scan(host, port, proxy)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:
@@ -72,11 +73,11 @@ class Main:
                             elif scan_type == "-pudp":
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        Scanner.udp_port_scan(self, address, port, proxy)
+                                        scanner.udp_port_scan(address, port, proxy)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            Scanner.udp_port_scan(self, host, port, proxy)
+                                            scanner.udp_port_scan(host, port, proxy)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:
