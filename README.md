@@ -136,7 +136,7 @@ scanner -pudp example.com 53
 
 ### `osint -p <username>`
 
-Checks whether a given username/handle exists on Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest, and prints a per-platform result summary. If no proxy is active yet, DOOM warns that scraping some of these platforms may violate their terms of service and asks whether to route the request through a proxy. Run `proxy -a` beforehand to skip that prompt.
+Checks whether a given username/handle exists on Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest, and prints a per-platform result summary. If no proxy is active yet, DOOM warns that scraping some of these platforms may violate their terms of service and asks whether to route the request through a proxy. Run `proxy -t` beforehand to skip that prompt.
 
 ```
 osint -p someusername
@@ -164,9 +164,11 @@ Controls the proxy used for requests.
 | `-ls`| Print all proxies in the built-in list |
 
 ```
-proxy -a
+proxy -a 172.171.83.26:8080
+proxy -t
 proxy -s
-proxy -d
+proxy -f
+proxy -ls
 ```
 
 ### `host <domain>`

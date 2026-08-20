@@ -150,7 +150,7 @@ class Scanner:
             
         choice_3 = input(f"\nDo you want to try common sql injection payloads on {get_domain(host)}? [y/n] ")
         if choice_3 == "y":
-            extensions = ["", ".html", ".htm", ".asp", ".aspx", ".jsp", ".php", ".jspx", ".jspx", ".jspx", ".jspx", ".jspx"]
+            extensions = ["", ".html", ".htm", ".asp", ".aspx", ".jsp", ".php", ".jspx"]
             directories = ["", "admin", "login", "wp-admin", "cms", "panel", "dashboard", "config", "includes"]
             payloads = [
                 "' OR '1'='1",
