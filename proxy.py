@@ -2,8 +2,8 @@ import requests
 import random
 import json
 
-from encryptor import encrypt, decrypt
-from signer import SECRET_KEY
+from save_system.encryptor import encrypt, decrypt
+from save_system.signer import SECRET_KEY
 
 class Proxy:
     def __init__(self):

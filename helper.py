@@ -78,7 +78,7 @@ def get_domain(ip) -> str:
     except socket.herror:
         return None
     
-def get_host_or_domain(host, domain) -> tuple:
+def get_host_or_domain(host, domain) -> str:
     if domain:
         target = domain
     if host:

@@ -70,6 +70,7 @@ class Network:
                     sqlmap_instance.set_random_agent(True)
                     sqlmap_instance.set_batch(True)
                     sqlmap_instance.set_output_dir("sqlmap_output")
+                    sqlmap_instance.set_proxy(proxy.proxy)
 
                     sqlmap_instance.run()
                     print(sqlmap_instance.get_output())
@@ -79,7 +80,7 @@ class Network:
                    continue
                
         if not successfull:
-            print(f"\nNone of the sql injection attempts on {url} worked")
+            print(f"\nNone of the sql injection attempts on {target} worked")
                 
     def att_port_80(self, target, proxy):            
         choice = input(f"\nPort 80 is open, do you want to fetch the contents of {target}, which is hosted on this ip? [y/n] ")

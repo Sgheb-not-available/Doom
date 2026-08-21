@@ -97,11 +97,33 @@ class Main:
                             address = args[1]
                             
                             if action == "-get":
-                                network.get_content(address, proxy, d_ipv4)
+                                if address:
+                                    if bool(re.match(d_ipv4, address)):
+                                        network.get_content(address, proxy, d_ipv4)
+                                    elif bool(re.match(d_pattern, address)):
+                                        network.get_content(address, proxy, d_ipv4=None)
+                                    else:
+                                        print("Please provide a valid address")
+                                else:
+                                    print("You must provide an address to fetch the contents from")
                             elif action == "-rb":
-                                network.get_robots(get_host_or_domain(host, domain), proxy.proxy)
+                                if address:
+                                    if bool(re.match(d_ipv4, address)) or bool(re.match(d_pattern, address)):
+                                        network.get_robots(address, proxy)
+                                    else:
+                                        print("Please provide a valid address")
+                                else:
+                                    print("You must provide an address to fetch the contents from")
                             elif action == "-sql":
-                                network.try_sql_injection(get_host_or_domain(host, domain), proxy.proxy)
+                                if address:
+                                    if bool(re.match(d_ipv4, address)) or bool(re.match(d_pattern, address)):
+                                        network.try_sql_injection(address, proxy)
+                                    else:
+                                        print("Please provide a valid address")
+                                else:
+                                    print("You must provide an address to fetch the contents from")
+                            else:
+                                print(f"Invalid argument '{args[0]}'. Type help to list available commands")
                 elif cmd == "osint":
                     if check_connection():
                         if not args:
