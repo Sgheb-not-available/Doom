@@ -59,3 +59,20 @@ class Network:
                         
         if not succeeded:
             print("None of the common sql injection payloads worked")
+            
+    def att_port_80(self, target, proxy):            
+        choice = input(f"\nPort 80 is open, do you want to fetch the contents of {target}, which is hosted on this ip? [y/n] ")
+        if choice == "y":
+            if not proxy.proxy:
+                p_choice = input("\nYou have no active proxy, do you want to use one before attacking this web page? [y/n] ")
+                if p_choice == "y":
+                    proxy.get_proxy()
+            self.network.get_content(target, proxy, d_ipv4=None)
+    
+        choice_2 = input(f"\nDo you want to try and fetch the robots.txt file from {target}? [y/n] ")
+        if choice_2 == "y":
+            self.network.get_robots(target, proxy)
+            
+        choice_3 = input(f"\nDo you want to try common sql injection payloads on {target}? [y/n] ")
+        if choice_3 == "y":
+            self.network.try_sql_injection(target, proxy)

@@ -2,6 +2,9 @@ import requests
 import random
 import json
 
+from encryptor import encrypt, decrypt
+from signer import SECRET_KEY
+
 class Proxy:
     def __init__(self):
         self.proxy = None
@@ -51,14 +54,22 @@ class Proxy:
         raise Exception("All available proxies are down, try again in a bit")  
     
     def save_proxy_list(self):
+        data = [{"proxy_list": self.proxy_list_original}]
+        payload = json.dumps(data)
+        token = encrypt(payload, SECRET_KEY)
         with open("proxy.json", "w") as f:
-            json.dump({"proxy_list": self.proxy_list_original}, f)
+            json.dump({"data": token}, f)
 
     def load_proxy_list(self) -> list:
         try:
             with open("proxy.json", "r") as f:
                 raw = json.load(f)
-                proxies = raw.get("proxy_list", [])
-                return proxies if proxies else self.proxy_list_base
-        except (FileNotFoundError, json.JSONDecodeError):
+            token = raw["data"]
+            payload = decrypt(token, SECRET_KEY)
+            data = json.loads(payload)
+            return data if data else self.proxy_list_base
+        except (FileNotFoundError, json.JSONDecodeError, KeyError):
             return self.proxy_list_base
+        except Exception:
+            print("\nThe proxy save file was modified or corrupted. Delete your save file and restart the program. Closing Doom...")
+            exit()
