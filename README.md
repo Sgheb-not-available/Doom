@@ -33,7 +33,7 @@
 | DNS | Domain → IP resolution, IP → domain reverse lookup |
 | OSINT | Username/profile lookup across Instagram, Facebook, GitHub, Reddit, TikTok, and Pinterest; domain WHOIS lookups |
 | Networking | Optional proxy rotation for OSINT and page-fetch requests, connectivity check before any network command |
-| Web | Fetch the raw content of a web page by domain or IP, with an optional prompt to grab a page automatically when a scan finds port 80 open |
+| Web | Fetch the raw content of a web page or its `robots.txt` by domain or IP, with an optional prompt to grab a page automatically when a scan finds port 80 open |
 | Shell | Simple input validation for IPs, domains, and CIDR ranges; `clear` and `quit` built in |
 
 ## Requirements
@@ -84,6 +84,10 @@ proxy
     -c                Change proxy
     -s                Check proxy status
     -ls               List available proxies
+net
+    -get              Grab the content of a web page
+    -rb               Fetch a domain's robots.txt
+    -sql              Try common sql injection payloads on a web page
 get                   Grab the content of a web page
 host                  Perform a DNS lookup
 domain                perform a reverse DNS lookup
@@ -150,6 +154,32 @@ Looks up WHOIS registration data for a domain. Prints the registered admin name 
 osint -w example.com
 ```
 
+### `net -get <domain|ip>`
+
+Fetches and prints the raw content of a web page over HTTP. An IP address is reverse-resolved to a domain before the request is made.
+
+```
+net -get example.com
+net -get 93.184.216.34
+```
+
+### `net -rb <domain|ip>`
+
+Fetches and prints a site's `robots.txt`, if one is published.
+
+```
+net -rb example.com
+```
+
+### `net -sql <domain|ip>`
+
+Tryes common sql injection payloads on different pages and directories in a website
+
+```
+net -sql example.com
+```
+
+
 ### `proxy <action>`
 
 Controls the proxy used for requests.
@@ -210,6 +240,7 @@ get 93.184.216.34
 main.py        Interactive shell and command dispatch
 scanner.py     Ping sweep, ARP scan, TCP/UDP port scanning
 osint.py       Username/profile lookup across social platforms
+network.py     Page/robots.txt fetching
 proxy.py       Proxy selection and rotation
 helper.py      Shared networking utilities, banner and help text
 ```

@@ -78,17 +78,13 @@ def get_domain(ip) -> str:
     except socket.herror:
         return None
     
-def get_content(address, proxy, d_ipv4):
-    try:
-        if d_ipv4 and bool(re.match(d_ipv4, address)):
-            address = get_domain(address)
-        r = requests.get(f"http://{address}", proxies=proxy.proxy)
-        if r.status_code == 200:
-            print(f"\n{r.content.strip()}")
-        else:
-            print(f"There was an error while to fetch the content of {address}, code: {r.status_code}")
-    except requests.exceptions.SSLError:
-        print(f"An SSL error occourred while trying to fetch the content of {address}")
+def get_host_or_domain(host, domain) -> tuple:
+    if domain:
+        target = domain
+    if host:
+        target = host
+        
+    return target
 
 """
 OTHER
@@ -112,6 +108,10 @@ scanner
     -arp              Perform an ARP scan on the LAN
     -ptcp             Perform a TCP port scan
     -pudp             Perform a UDP port scan
+net
+    -get              Fetch the content of a web page
+    -rb               Fetch the robots.txt file of a web page
+    -sql              Try common sql injection payloads on a web page
 osint
     -p                Scrape socials for a profile
     -w                Perform a whois lookup on a domain
@@ -122,7 +122,6 @@ proxy
     -c                Change proxy
     -s                Check proxy status
     -ls               List available proxies
-get                   Fetch the content of a web page
 host                  Perform a DNS lookup
 domain                perform a reverse DNS lookup
 clear                 Clean your terminal

@@ -3,6 +3,7 @@ import re
 
 from helper import *
 from scanner import Scanner
+from network import Network
 from osint import Osint
 
 class Main:
@@ -13,6 +14,7 @@ class Main:
     def shell(self):
         proxy = Proxy()
         scanner = Scanner()
+        network = Network()
         
         d_octet = r"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?|0)"
         d_ipv4 = rf"^{d_octet}\.{d_octet}\.{d_octet}\.{d_octet}$"
@@ -59,11 +61,11 @@ class Main:
                             elif scan_type == "-ptcp":             
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        scanner.tcp_port_scan(address, port, proxy)
+                                        scanner.tcp_port_scan(port, proxy, host=address, domain=None)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            scanner.tcp_port_scan(host, port, proxy)
+                                            scanner.tcp_port_scan(port, proxy, host=None, domain=address)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:
@@ -73,11 +75,11 @@ class Main:
                             elif scan_type == "-pudp":
                                 if address:
                                     if bool(re.match(d_ipv4, address)):
-                                        scanner.udp_port_scan(address, port, proxy)
+                                        scanner.udp_port_scan(port, proxy, host=address, domain=None)
                                     elif bool(re.match(d_pattern, address)):
                                         host = get_host(address)
                                         if host:
-                                            scanner.udp_port_scan(host, port, proxy)
+                                            scanner.udp_port_scan(port, proxy, host=None, domain=address)
                                         else:
                                             print(f"{address} is not a registered domain")
                                     else:
@@ -86,6 +88,20 @@ class Main:
                                     print("You must provide an address in order for the udp port scan to happen")                                
                             else:
                                 print(f"Invalid argument '{args[0]}'. Type help to list available commands")
+                elif cmd == "net":
+                    if check_connection():
+                        if not args:
+                            print("Use: net [action] [domain / ip]")
+                        else:
+                            action = args[0]
+                            address = args[1]
+                            
+                            if action == "-get":
+                                network.get_content(address, proxy, d_ipv4)
+                            elif action == "-rb":
+                                network.get_robots(get_host_or_domain(host, domain), proxy.proxy)
+                            elif action == "-sql":
+                                network.try_sql_injection(get_host_or_domain(host, domain), proxy.proxy)
                 elif cmd == "osint":
                     if check_connection():
                         if not args:
@@ -188,15 +204,7 @@ class Main:
                                 else:
                                     print(f"{address} does not exist or isn't hosting a domain")
                             else:
-                                print("Address should be written like this: [0-255].[0-255].[0-255].[0-255]")
-                elif cmd == "get":
-                    if check_connection():
-                        if not args:
-                            print("Use: get [domain / ip]")
-                        else:
-                            address = args[0]
-                            
-                            get_content(address, proxy, d_ipv4)    
+                                print("Address should be written like this: [0-255].[0-255].[0-255].[0-255]")  
                 elif cmd == "clear":
                     os.system("cls" if os.name == "nt" else "clear")
                     print_doom()

