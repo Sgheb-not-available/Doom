@@ -31,7 +31,7 @@ class Proxy:
                     self.proxy_list_dinamic.pop(i)
         
         while len(self.proxy_list_dinamic) > 0:
-            i = random.randint(0, len(self.proxy_list_dinamic) - 2)
+            i = random.randint(0, len(self.proxy_list_dinamic) - 1)
             proxy = self.proxy_list_dinamic[i]
             proxies = {
                 "http": f"http://{proxy}",

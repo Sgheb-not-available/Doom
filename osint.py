@@ -1,17 +1,14 @@
 import time
 import whois
-import os
 
 from helper import *
+from network import Network
 
 class Osint:
-    def profile_scan(self, name, proxy, timeout=5, max_retries=3):
-        HEADERS = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
+    def __init__(self):
+        self.network = Network()
 
+    def profile_scan(self, name, proxy, timeout=5, max_retries=3):
         urls = {"Instagram": f"https://www.instagram.com/{name}/", 
                 "Facebook": f"https://www.facebook.com/{name}/",
                 "Github": f"https://www.github.com/{name}", 
@@ -26,7 +23,7 @@ class Osint:
             for attempt in range(max_retries):
                 if not exists:
                     try:
-                        r = requests.get(url, headers=HEADERS, timeout=timeout, allow_redirects=True, proxies=proxy.proxy)
+                        r = requests.get(url, headers=self.network.headers, timeout=timeout, allow_redirects=True, proxies=proxy.proxy)
                     except requests.RequestException as e:
                         if attempt == max_retries:
                             print(f"{key}: Request failed: {e}")

